@@ -1,0 +1,15 @@
+services:
+  data_ingestor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: post-slovenia-ingestor:latest
+    container_name: post-slovenia-ingestor
+    restart: unless-stopped
+    # No ports => not accessible externally
+    # Optional: mount a live shipments.txt from your host
+    volumes:
+      - ./post_slovenia/shipments.txt:/app/shipments.txt:ro
+    security_opt:
+      - no-new-privileges:true
+    read_only: false   # set true if your app never writes to the FS
