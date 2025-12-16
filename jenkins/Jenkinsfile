@@ -1,0 +1,50 @@
+pipeline {
+    agent { label 'dev01' }  // Run the pipeline on the node with the label 'dev01' 
+
+    environment {
+        // Docker registry credentials (optional)
+        APP_NAME = 'post-slovenia-ingestor'  // Use APP_NAME for the Docker image
+        DOCKER_TAG = 'latest'  // Tag for the image
+        DOCKER_REG = "harbor.trace.rid-intrasoft.eu"
+        DOCKER_REPO = "/demo/"
+        DOCKER_REG_CREDS = "harbor-jenkins-creds"
+        COMPOSE_FILE = 'docker-compose.yml'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/trace-project-eu/postslovenia-di.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${APP_NAME}:${DOCKER_TAG}")
+                }
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                script {
+                    sh """
+                    docker-compose -f ${COMPOSE_FILE} down
+                    docker-compose -f ${COMPOSE_FILE} up -d --build
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment completed successfully!'
+        }
+        failure {
+            echo 'Deployment failed. Check logs for details.'
+        }
+    }
+}
+

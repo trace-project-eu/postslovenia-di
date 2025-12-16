@@ -1,0 +1,47 @@
+pipeline {
+    agent {
+        node {
+            label 'dev01'
+        }
+    }
+
+    environment {
+        APP_NAME = post-slovenia-ingestor'
+        DOCKER_REG = "harbor.trace.rid-intrasoft.eu"
+        DOCKER_REPO = "/trace/"
+        COMPOSE_FILE = 'docker-compose.yml'
+    }
+
+    stages {
+
+        stage('Stop Application') {
+            steps {
+                sh '''
+                echo "Stopping Docker Compose services..."
+                docker-compose -f ${COMPOSE_FILE} down --remove-orphans
+                '''
+            }
+        }
+
+        stage('Cleanup Dangling Resources') {
+            steps {
+                sh '''
+                echo "Cleaning up unused Docker resources..."
+                docker container prune -f
+                docker image prune -f
+                docker volume prune -f
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Application stopped and resources cleaned successfully.'
+        }
+        failure {
+            echo 'Kill pipeline failed. Manual intervention may be required.'
+        }
+    }
+}
+
