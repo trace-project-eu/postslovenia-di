@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'dev01' }  // Run the pipeline on the node with the label 'dev01' 
+    agent { label 'dev04' }  
 
     environment {
         // Docker registry credentials (optional)
