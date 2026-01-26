@@ -6,7 +6,7 @@ pipeline {
         APP_NAME = 'post-slovenia-ingestor'  // Use APP_NAME for the Docker image
         DOCKER_TAG = 'latest'  // Tag for the image
         DOCKER_REG = "harbor.trace.rid-intrasoft.eu"
-        DOCKER_REPO = "/demo/"
+        DOCKER_REPO = "/postslovenia-di/"
         DOCKER_REG_CREDS = "harbor-jenkins-creds"
         COMPOSE_FILE = 'docker-compose.yml'
     }
