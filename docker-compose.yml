@@ -13,3 +13,5 @@ services:
     security_opt:
       - no-new-privileges:true
     read_only: false   # set true if your app never writes to the FS
+    labels:
+        io.portainer.accesscontrol.teams: trace-all
