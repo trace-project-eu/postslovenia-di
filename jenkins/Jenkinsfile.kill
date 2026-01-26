@@ -8,7 +8,7 @@ pipeline {
     environment {
         APP_NAME = post-slovenia-ingestor'
         DOCKER_REG = "harbor.trace.rid-intrasoft.eu"
-        DOCKER_REPO = "/trace/"
+        DOCKER_REPO = "/postslovenia-di/"
         COMPOSE_FILE = 'docker-compose.yml'
     }
 
