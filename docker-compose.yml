@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: post-slovenia-ingestor:latest
+    image: image: ${DOCKER_REG}/${DOCKER_REPO}/${APP_NAME}:${DOCKER_TAG}
     container_name: post-slovenia-ingestor
     restart: unless-stopped
     # No ports => not accessible externally
