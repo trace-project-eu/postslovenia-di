@@ -1,44 +1,51 @@
 pipeline {
-    agent { label 'dev04' }  
+  agent { label 'dev04' }
 
-    environment {
-        // Docker registry credentials (optional)
-        APP_NAME = 'post-slovenia-ingestor'  // Use APP_NAME for the Docker image
-        DOCKER_TAG = 'latest'  // Tag for the image
-        DOCKER_REG = "harbor.trace.rid-intrasoft.eu"
-        DOCKER_REPO = "/postslovenia-di/"
-        DOCKER_REG_CREDS = "harbor-jenkins-creds"
-        COMPOSE_FILE = 'docker-compose.yml'
+  environment {
+    APP_NAME          = 'post-slovenia-ingestor'
+    DOCKER_TAG        = 'latest'
+    DOCKER_REG        = 'harbor.trace.rid-intrasoft.eu'
+    DOCKER_REPO       = 'postslovenia-di'
+    DOCKER_REG_CREDS  = 'harbor-jenkins-creds'
+    COMPOSE_FILE      = 'docker-compose.yml'
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        sh """
+          docker build -t ${APP_NAME}:${DOCKER_TAG} .
+        """
+      }
     }
 
-    stages {
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("${APP_NAME}:${DOCKER_TAG}")
-                }
-            }
-        }
+    stage('Push to Harbor') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: "${DOCKER_REG_CREDS}", usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')]) {
+          sh """
+            echo "$HARBOR_PASS" | docker login ${DOCKER_REG} -u "$HARBOR_USER" --password-stdin
 
-        stage('Deploy with Docker Compose') {
-            steps {
-                script {
-                    sh """
-                    docker-compose -f ${COMPOSE_FILE} down
-                    docker-compose -f ${COMPOSE_FILE} up -d --build
-                    """
-                }
-            }
+            docker tag ${APP_NAME}:${DOCKER_TAG} ${DOCKER_REG}/${DOCKER_REPO}/${APP_NAME}:${DOCKER_TAG}
+            docker push ${DOCKER_REG}/${DOCKER_REPO}/${APP_NAME}:${DOCKER_TAG}
+
+            docker logout ${DOCKER_REG}
+          """
         }
+      }
     }
 
-    post {
-        success {
-            echo 'Deployment completed successfully!'
-        }
-        failure {
-            echo 'Deployment failed. Check logs for details.'
-        }
+    stage('Deploy with Docker Compose') {
+      steps {
+        sh """
+          docker compose -f ${COMPOSE_FILE} down --remove-orphans
+          docker compose -f ${COMPOSE_FILE} up -d --build
+        """
+      }
     }
+  }
+
+  post {
+    success { echo 'Deployment completed successfully!' }
+    failure { echo 'Deployment failed. Check logs for details.' }
+  }
 }
-
