@@ -12,12 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/trace-project-eu/postslovenia-di.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
